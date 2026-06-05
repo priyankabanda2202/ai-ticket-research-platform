@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 python run_bot.py
 
-##Demo
+## Demo
 
 Send a stock ticker:
 
