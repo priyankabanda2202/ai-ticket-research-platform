@@ -1,0 +1,13 @@
+yfinance
+numpy
+requests
+fpdf2
+streamlit
+langchain
+reportlab
+langgraph
+fastapi
+uvicorn
+openai
+pandas
+graph
