@@ -442,7 +442,12 @@
     setTimeout(() => {
       document.getElementById('sentBar').style.width = sentPct + '%';
       document.getElementById('confBar').style.width = confPct + '%';
-      document.getElementById('rsiDot').style.left = Math.min(Math.max(parseFloat(rsi), 0), 100) + '%';
+      const rsiValue = parseFloat(rsi);
+
+document.getElementById('rsiDot').style.left =
+    isNaN(rsiValue)
+        ? '50%'
+        : Math.min(Math.max(rsiValue, 0), 100) + '%';
 
       const steps = [
         [25,  'Fetching market data…'],
