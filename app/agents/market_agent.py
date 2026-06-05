@@ -16,7 +16,6 @@ def market_agent(state):
         "market": {
             "price": market["price"],
             "pe_ratio": market["pe_ratio"],
-            "volatility": market["volatility"],
-            "rsi": rsi
+            "rsi": market["rsi"]
         }
     }
