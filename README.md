@@ -21,6 +21,8 @@ Multi-Agent AI stock research platform built using LangGraph.
 - ReportLab
 
 ## Architecture
+![Uploading image.png…]()
+
 
 User → Telegram/Web UI → FastAPI → LangGraph Agents → Research Report
 
