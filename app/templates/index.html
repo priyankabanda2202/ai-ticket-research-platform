@@ -354,8 +354,8 @@
     
     const rsi =
         typeof data.market?.rsi === "number"
-            ? data.market.rsi
-            : 50;
+            ? data.market.rsi.toFixed(1)
+            : "N/A";
     const sent     = data.sentiment?.sentiment ?? 'neutral';
     const sentPct  = ((data.sentiment?.score ?? 0) * 100).toFixed(0);
     const drivers  = (data.sentiment?.drivers ?? []).map(d => `<span class="driver-chip">${d}</span>`).join('');
