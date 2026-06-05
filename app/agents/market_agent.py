@@ -4,7 +4,12 @@ from app.tools.indicators import calculate_rsi
 def market_agent(state):
     ticker = state["ticker"]
 
-    market = fetch_market_data(ticker)
+    try:
+        market = fetch_market_data(ticker)
+    except Exception:
+        market = {
+            "price": "N/A"
+        }
     rsi = calculate_rsi(ticker)
 
     return {
