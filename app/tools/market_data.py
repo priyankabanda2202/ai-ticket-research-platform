@@ -1,11 +1,23 @@
 import yfinance as yf
 
-def fetch_market_data(ticker: str):
-    stock = yf.Ticker(ticker)
-    info = stock.info
+def fetch_market_data(ticker):
 
-    return {
-        "price": info.get("currentPrice"),
-        "pe_ratio": info.get("trailingPE"),
-        "volatility": "high" if info.get("beta", 1) > 1.2 else "medium"
-    }
+    try:
+
+        stock = yf.Ticker(ticker)
+
+        hist = stock.history(period="1d")
+
+        price = float(hist["Close"].iloc[-1])
+
+        return {
+            "price": price
+        }
+
+    except Exception as e:
+
+        print("Market Data Error:", e)
+
+        return {
+            "price": "Unavailable"
+        }
