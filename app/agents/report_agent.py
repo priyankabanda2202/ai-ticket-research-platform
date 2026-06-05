@@ -19,7 +19,23 @@ DANGER      = colors.HexColor("#f87171")
 WARNING     = colors.HexColor("#fbbf24")
 
 W, H = A4   # 595 x 842 pts
+def safe_float(value, default=0):
+    try:
+        return float(value)
+    except:
+        return default
 
+def safe_currency(value):
+    try:
+        return f"${float(value):.2f}"
+    except:
+        return "N/A"
+
+def safe_number(value, decimals=2):
+    try:
+        return f"{float(value):.{decimals}f}"
+    except:
+        return "N/A"
 def rec_color(rec):
     r = (rec or "").upper()
     if r == "BUY":  return colors.HexColor("#34d399")
@@ -98,10 +114,10 @@ def report_agent(state):
     # ── METRICS ROW ─────────────────────────────────────────
     y_metrics = H - 200
     metric_data = [
-        ("Current Price",   f"${market.get('price', 0):.2f}",       "USD"),
-        ("P/E Ratio",       f"{market.get('pe_ratio', 0):.2f}",      "Price to Earnings"),
-        ("Volatility",      str(market.get('volatility','-')).title(),"Risk Level"),
-        ("RSI",             f"{market.get('rsi', 0):.1f}",           "Momentum"),
+        ("Current Price", safe_currency(market.get("price")), "USD"),
+        ("P/E Ratio", safe_number(market.get("pe_ratio")), "Price to Earnings"),
+        ("Volatility", str(market.get("volatility", "-")).title(), "Risk Level"),
+        ("RSI", safe_number(market.get("rsi"), 1), "Momentum"),
     ]
     box_w = (W - 60) / 4
     for i, (label, value, sub) in enumerate(metric_data):
@@ -258,9 +274,9 @@ def report_agent(state):
         ["Confidence",      f"{int(conf * 100)}%"],
         ["Sentiment",       sent_label],
         ["Sentiment Score", f"{int(sent_score * 100)} / 100"],
-        ["Price",           f"${market.get('price', 0):.2f}"],
-        ["P/E Ratio",       f"{market.get('pe_ratio', 0):.2f}"],
-        ["RSI",             f"{market.get('rsi', 0):.1f}"],
+        ["Price", safe_currency(market.get("price"))],
+        ["P/E Ratio", safe_number(market.get("pe_ratio"))],
+        ["RSI", safe_number(market.get("rsi"), 1)],
         ["Volatility",      str(market.get('volatility', '-')).title()],
     ]
 
