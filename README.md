@@ -29,3 +29,16 @@ User → Telegram/Web UI → FastAPI → LangGraph Agents → Research Report
 pip install -r requirements.txt
 
 python run_bot.py
+
+##Demo
+
+Send a stock ticker:
+
+AAPL
+
+and receive:
+
+Recommendation
+Confidence Score
+AI-generated rationale
+PDF Report
