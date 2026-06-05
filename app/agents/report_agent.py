@@ -210,7 +210,7 @@ def report_agent(state):
                       fill_color=ACCENT)
 
     # RSI gauge bar
-    rsi_val = market.get("rsi", 50)
+    rsi_val = safe_float(market.get("rsi"), 50)
     c.setFillColor(MID_GRAY)
     c.setFont("Helvetica", 7.5)
     c.drawString(dec_x + 12, y_sent + 24, "RSI Gauge")
