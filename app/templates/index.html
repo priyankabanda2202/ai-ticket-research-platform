@@ -338,11 +338,24 @@
   }
 
   function renderCard(data) {
-    const rec      = (data.decision?.recommendation || 'HOLD').toUpperCase();
-    const price    = data.market?.price?.toFixed(2) ?? '—';
-    const pe       = data.market?.pe_ratio?.toFixed(2) ?? '—';
-    const vol      = data.market?.volatility ?? 'medium';
-    const rsi      = data.market?.rsi ?? 50;
+    const rec = (data.decision?.recommendation || 'HOLD').toUpperCase();
+    
+    const price =
+        typeof data.market?.price === "number"
+            ? data.market.price.toFixed(2)
+            : "N/A";
+    
+    const pe =
+        typeof data.market?.pe_ratio === "number"
+            ? data.market.pe_ratio.toFixed(2)
+            : "N/A";
+    
+    const vol = data.market?.volatility ?? "medium";
+    
+    const rsi =
+        typeof data.market?.rsi === "number"
+            ? data.market.rsi
+            : 50;
     const sent     = data.sentiment?.sentiment ?? 'neutral';
     const sentPct  = ((data.sentiment?.score ?? 0) * 100).toFixed(0);
     const drivers  = (data.sentiment?.drivers ?? []).map(d => `<span class="driver-chip">${d}</span>`).join('');
@@ -380,7 +393,7 @@
         </div>
         <div class="metric-box">
           <div class="metric-label">RSI</div>
-          <div class="metric-value">${parseFloat(rsi).toFixed(1)}</div>
+          <div class="metric-value">${typeof rsi === "number" ? rsi.toFixed(1) : "N/A"}</div>
           <div class="metric-sub">Momentum indicator</div>
         </div>
       </div>
