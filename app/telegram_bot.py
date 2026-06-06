@@ -3,7 +3,29 @@ from telegram.ext import ContextTypes
 from app.graph import build_graph
 
 graph = build_graph()
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
+    await update.message.reply_text(
+        """
+📈 Welcome to Ticker Research Bot
+
+Send any stock ticker:
+
+AAPL
+MSFT
+NVDA
+AMZN
+GOOGL
+
+and I'll generate:
+
+✅ Market Analysis
+✅ RSI
+✅ Sentiment Analysis
+✅ Buy/Sell Recommendation
+✅ PDF Research Report
+"""
+    )
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     ticker = update.message.text.strip().upper()
