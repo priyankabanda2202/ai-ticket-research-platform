@@ -1,8 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from app.graph import build_graph
-
-graph = build_graph()
+import requests
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
@@ -33,7 +31,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await update.message.reply_text("🔍 Analyzing...")
 
     try:
-        result = graph.invoke({"ticker": ticker})
+        response = requests.post(
+            "https://ai-ticket-research-platform.onrender.com/analyze",
+            json={"ticker": ticker},
+            timeout=60
+        )
+        
+        result = response.json()
         print(result)
 
         decision = result["decision"]
@@ -81,10 +85,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         https://ai-ticket-research-platform.onrender.com
         """
 
-        await msg.edit_text(
-            reply,
-            parse_mode="Markdown"
-        )
         await msg.edit_text(
             reply,
             parse_mode="Markdown"
