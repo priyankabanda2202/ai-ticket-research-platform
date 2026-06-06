@@ -10,3 +10,6 @@ fastapi
 uvicorn
 openai
 pandas
+python-dotenv
+python-telegram-bot==20.7
+requests
