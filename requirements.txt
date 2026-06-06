@@ -12,4 +12,3 @@ openai
 pandas
 python-dotenv
 python-telegram-bot==21.6
-requests
