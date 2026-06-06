@@ -17,33 +17,47 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         decision = result["decision"]
         market = result.get("market", {})
         sentiment_data = result.get("sentiment", {})
-
+        
         confidence = round(decision.get("confidence", 0) * 100)
-
+        
+        price = market.get("price", "N/A")
+        pe_ratio = market.get("pe_ratio", "N/A")
         rsi = market.get("rsi", "N/A")
+        volatility = market.get("volatility", "N/A")
+        
         sentiment = sentiment_data.get("sentiment", "Neutral")
-
+        sentiment_score = round(sentiment_data.get("score", 0) * 100)
+        
         reply = f"""
-📈 *STOCK ANALYSIS*
-
-━━━━━━━━━━━━━━━
-
-🏢 *Ticker:* `{ticker}`
-
-🟢 *Recommendation:* *{decision['recommendation']}*
-
-🎯 *Confidence:* {confidence}%
-
-📊 *RSI:* {rsi}
-
-📰 *Sentiment:* {sentiment}
-
-━━━━━━━━━━━━━━━
-
-💡 *AI Insight*
-
-{decision['rationale']}
-"""
+        📈 *STOCK ANALYSIS*
+        
+        ━━━━━━━━━━━━━━━
+        
+        🏢 *Ticker:* `{ticker}`
+        
+        💰 *Price:* ${price}
+        
+        📊 *P/E Ratio:* {pe_ratio}
+        
+        📉 *RSI:* {rsi}
+        
+        ⚡ *Volatility:* {volatility}
+        
+        📰 *Sentiment:* {sentiment} ({sentiment_score}%)
+        
+        🟢 *Recommendation:* *{decision['recommendation']}*
+        
+        🎯 *Confidence:* {confidence}%
+        
+        ━━━━━━━━━━━━━━━
+        
+        💡 *AI Insight*
+        
+        _{decision['rationale']}_
+        
+        🌐 Dashboard:
+        https://ai-ticket-research-platform.onrender.com
+        """
 
         await msg.edit_text(
             reply,
