@@ -7,14 +7,14 @@ from reportlab.platypus import Table, TableStyle
 from datetime import datetime
 
 # ── Colour palette ──────────────────────────────────────────
-DARK_BG     = colors.white
+DARK_BG     = colors.HexColor("#0d1420")
 ACCENT      = colors.HexColor("#38bdf8")
 ACCENT2     = colors.HexColor("#818cf8")
 ACCENT3     = colors.HexColor("#34d399")
 WHITE       = colors.white
 LIGHT_GRAY  = colors.HexColor("#e2e8f0")
 MID_GRAY    = colors.HexColor("#94a3b8")
-SURFACE     = colors.white
+SURFACE     = colors.HexColor("#121a2a")
 DANGER      = colors.HexColor("#f87171")
 WARNING     = colors.HexColor("#fbbf24")
 
@@ -53,11 +53,19 @@ def draw_rounded_rect(c, x, y, w, h, r=6, fill_color=None, stroke_color=None):
     p.arcTo(x, y + h - 2*r, x + 2*r, y + h, startAng=90, extent=90)
     p.lineTo(x, y + r)
     p.arcTo(x, y, x + 2*r, y + 2*r, startAng=180, extent=90)
+    p.close()
+    if fill_color:
+        c.setFillColor(fill_color)
+    if stroke_color:
+        c.setStrokeColor(stroke_color)
+        c.setLineWidth(0.5)
     c.drawPath(p, fill=1 if fill_color else 0, stroke=1 if stroke_color else 0)
 
 def draw_progress_bar(c, x, y, width, height, pct, bg_color, fill_color):
+    # Background track
     draw_rounded_rect(c, x, y, width, height, r=3, fill_color=bg_color)
-    fill_w = max(width * min(pct, 1.0), height)
+    # Fill
+    fill_w = max(width * min(pct, 1.0), height)  # min = pill width
     draw_rounded_rect(c, x, y, fill_w, height, r=3, fill_color=fill_color)
 
 def report_agent(state):
@@ -65,7 +73,6 @@ def report_agent(state):
     decision = state["decision"]
     market   = state.get("market", {})
     sentiment= state.get("sentiment", {})
-    evaluation = state.get("evaluation", {})  # 1. EXTRACT NEW EVALUATION AGENT DATA
 
     os.makedirs("reports", exist_ok=True)
     file_path = f"reports/{ticker}_report.pdf"
@@ -76,9 +83,11 @@ def report_agent(state):
     c.setFillColor(DARK_BG)
     c.rect(0, H - 110, W, 110, fill=1, stroke=0)
 
+    # Accent top line
     c.setFillColor(ACCENT)
     c.rect(0, H - 3, W, 3, fill=1, stroke=0)
 
+    # Logo / title
     c.setFillColor(ACCENT)
     c.setFont("Helvetica-Bold", 22)
     c.drawString(30, H - 50, ticker)
@@ -91,6 +100,7 @@ def report_agent(state):
     c.setFont("Helvetica", 9)
     c.drawString(30, H - 88, f"Generated: {datetime.now().strftime('%B %d, %Y  %H:%M UTC')}")
 
+    # Recommendation badge (top-right)
     rec   = (decision.get("recommendation") or "HOLD").upper()
     rc    = rec_color(rec)
     badge_x = W - 110
@@ -127,6 +137,7 @@ def report_agent(state):
         c.setFont("Helvetica", 8)
         c.drawString(bx + 12, y_metrics + 18, sub)
 
+    # ── DIVIDER ─────────────────────────────────────────────
     y_div = y_metrics - 20
     c.setStrokeColor(colors.HexColor("#1e2d45"))
     c.setLineWidth(0.5)
@@ -155,6 +166,7 @@ def report_agent(state):
     score_str = f"{int(sent_score * 100)} / 100"
     c.drawRightString(30 + (W - 70) / 2 - 12, y_sent + 49, score_str)
 
+    # Sentiment bar
     bar_x = 42
     bar_y = y_sent + 32
     bar_w = (W - 70) / 2 - 24
@@ -162,6 +174,7 @@ def report_agent(state):
                       bg_color=colors.HexColor("#1e2d45"),
                       fill_color=sent_color)
 
+    # Drivers chips
     drivers = sentiment.get("drivers", [])
     chip_x = 42
     chip_y = y_sent + 12
@@ -191,19 +204,23 @@ def report_agent(state):
     c.setFont("Helvetica", 9)
     c.drawString(dec_x + 12, y_sent + 49, f"Confidence — {int(conf * 100)}%")
 
+    # Confidence bar
     draw_progress_bar(c, dec_x + 12, y_sent + 36, dec_w - 24, 7, conf,
                       bg_color=colors.HexColor("#1e2d45"),
                       fill_color=ACCENT)
 
+    # RSI gauge bar
     rsi_val = safe_float(market.get("rsi"), 50)
     c.setFillColor(MID_GRAY)
     c.setFont("Helvetica", 7.5)
     c.drawString(dec_x + 12, y_sent + 24, "RSI Gauge")
     rsi_bar_y = y_sent + 13
+    # Gradient-like: draw red → yellow → green in 3 segments
     seg_w = (dec_w - 24) / 3
     for seg, col in enumerate([DANGER, WARNING, ACCENT3]):
         draw_rounded_rect(c, dec_x + 12 + seg * seg_w, rsi_bar_y,
                           seg_w - 1, 6, r=3, fill_color=col)
+    # RSI dot
     rsi_pct = min(max(rsi_val, 0), 100) / 100
     dot_x = dec_x + 12 + rsi_pct * (dec_w - 24)
     c.setFillColor(WHITE)
@@ -217,6 +234,7 @@ def report_agent(state):
                       fill_color=SURFACE,
                       stroke_color=colors.HexColor("#1e2d45"))
 
+    # Left accent bar
     c.setFillColor(ACCENT2)
     c.rect(30, y_rat, 3, 70, fill=1, stroke=0)
 
@@ -227,6 +245,7 @@ def report_agent(state):
     c.setFillColor(LIGHT_GRAY)
     c.setFont("Helvetica", 10)
     rationale = decision.get("rationale", "")
+    # Wrap long rationale text
     words = rationale.split()
     lines, line = [], []
     for word in words:
@@ -241,32 +260,24 @@ def report_agent(state):
     for li, text in enumerate(lines[:3]):
         c.drawString(44, y_rat + 36 - li * 14, text)
 
-    # ── SYSTEM OVERVIEW & GOVERNANCE TABLE ──────────────────
+    # ── KEY METRICS TABLE ───────────────────────────────────
     y_table = y_rat - 30
     c.setFillColor(MID_GRAY)
     c.setFont("Helvetica", 8)
-    c.drawString(30, y_table, "CRITICAL METRICS & SYSTEM GOVERNANCE")
+    c.drawString(30, y_table, "SUMMARY TABLE")
 
     y_table -= 8
-    
-    # Extract evaluation metrics with standard fallback values
-    comp_score = evaluation.get("completeness_score", "N/A")
-    eval_quality = str(evaluation.get("quality", "UNKNOWN")).upper()
-    
-    # 2. INTEGRATED METRICS TABLE DATA (Appended Evals Metrics to the Bottom)
     table_data = [
-        ["Metric Classification", "Telemetry System Output"],
-        ["Ticker Asset",          ticker],
-        ["Core System Recommendation",  rec],
-        ["Decision Alignment Confidence", f"{int(conf * 100)}%"],
-        ["Textual Sentiment Context",   sent_label],
-        ["Quantitative Sentiment Score", f"{int(sent_score * 100)} / 100"],
-        ["Last Traded Price",     safe_currency(market.get("price"))],
-        ["Trailing P/E Ratio",    safe_number(market.get("pe_ratio"))],
-        ["Momentum Index (RSI)",  safe_number(market.get("rsi"), 1)],
-        ["Asset Volatility Band", str(market.get('volatility', '-')).title()],
-        ["Data Completeness Score", f"{comp_score}%" if isinstance(comp_score, (int, float)) else comp_score],
-        ["Governance Pipeline Quality", eval_quality]
+        ["Metric", "Value"],
+        ["Ticker",          ticker],
+        ["Recommendation",  rec],
+        ["Confidence",      f"{int(conf * 100)}%"],
+        ["Sentiment",       sent_label],
+        ["Sentiment Score", f"{int(sent_score * 100)} / 100"],
+        ["Price", safe_currency(market.get("price"))],
+        ["P/E Ratio", safe_number(market.get("pe_ratio"))],
+        ["RSI", safe_number(market.get("rsi"), 1)],
+        ["Volatility",      str(market.get('volatility', '-')).title()],
     ]
 
     col_w = [(W - 60) * 0.45, (W - 60) * 0.55]
@@ -280,17 +291,14 @@ def report_agent(state):
         ("TEXTCOLOR",   (0, 1), (-1, -1), colors.HexColor("#e2e8f0")),
         ("FONTNAME",    (0, 1), (-1, -1), "Helvetica"),
         ("FONTSIZE",    (0, 1), (-1, -1), 9),
-        # Alternating background table rows
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1),
+            [colors.HexColor("#0d1420"), colors.HexColor("#121a2a")]),
         ("GRID",        (0, 0), (-1, -1), 0.3, colors.HexColor("#1e2d45")),
-        ("TOPPADDING",  (0, 0), (-1, -1), 4.5),    # Adjusted padding slightly to guarantee 1-page constraints
-        ("BOTTOMPADDING",(0, 0), (-1, -1), 4.5),
+        ("TOPPADDING",  (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 6),
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        # Highlight Governance Rows at the bottom for readability
-        ("TEXTCOLOR",   (0, -2), (-1, -1), colors.HexColor("#818cf8")),
-        ("FONTNAME",    (0, -2), (-1, -1), "Helvetica-Bold"),
     ]))
-    
-    tbl.wrapOn(c, W - 60, 350)
+    tbl.wrapOn(c, W - 60, 300)
     tbl.drawOn(c, 30, y_table - tbl._height)
 
     # ── FOOTER ──────────────────────────────────────────────
